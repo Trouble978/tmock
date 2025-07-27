@@ -32,15 +32,21 @@ import { useStorage } from "@plasmohq/storage/hook"
 
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string
 
+interface ParamsData {
+  requestBody: string[]
+  response: string
+}
+
 interface InterfaceData {
   method: string
   url: string
   status: number
-  response: string
-  requestBody: string
+  // response: string
+  // requestBody: string
   time: number
   switch: boolean
   label: string
+  params?: ParamsData[]
 }
 // 添加这个新接口
 interface TabData {
@@ -264,7 +270,67 @@ function IndexPopup() {
   const handleTabChange = (key: string) => {
     setActiveTabKey(key)
   }
+  // 添加参数对的函数
+  const addParam = (tabKey: string, interfaceIndex: number) => {
+    setGroups((prevGroups) => {
+      return prevGroups.map((group) => {
+        if (group.key === tabKey) {
+          const newInterfaces = [...(group.interfaces || [])]
+          if (newInterfaces[interfaceIndex]) {
+            const newParam: ParamsData = {
+              requestBody: [], // 空数组，可以添加多个请求体
+              response: ""
+            }
+            newInterfaces[interfaceIndex] = {
+              ...newInterfaces[interfaceIndex],
+              params: [
+                ...(newInterfaces[interfaceIndex].params || []),
+                newParam
+              ]
+            }
+          }
+          return {
+            ...group,
+            interfaces: newInterfaces
+          }
+        }
+        return group
+      })
+    })
+    message.success("已添加新的响应")
+  }
 
+  // 更新某个参数对的响应
+  const updateParamResponse = (
+    tabKey: string,
+    interfaceIndex: number,
+    paramIndex: number,
+    response: string
+  ) => {
+    setGroups((prevGroups) => {
+      return prevGroups.map((group) => {
+        if (group.key === tabKey) {
+          const newInterfaces = [...(group.interfaces || [])]
+          if (newInterfaces[interfaceIndex]?.params?.[paramIndex]) {
+            const newParams = [...(newInterfaces[interfaceIndex].params || [])]
+            newParams[paramIndex] = {
+              ...newParams[paramIndex],
+              response
+            }
+            newInterfaces[interfaceIndex] = {
+              ...newInterfaces[interfaceIndex],
+              params: newParams
+            }
+          }
+          return {
+            ...group,
+            interfaces: newInterfaces
+          }
+        }
+        return group
+      })
+    })
+  }
   // 删除接口的函数
   const deleteInterface = (tabKey: string, interfaceIndex: number) => {
     Modal.confirm({
@@ -289,6 +355,144 @@ function IndexPopup() {
         })
         message.success("接口已删除")
       }
+    })
+  }
+  // 添加请求体到某个参数对
+  const addRequestBody = (
+    tabKey: string,
+    interfaceIndex: number,
+    paramIndex: number
+  ) => {
+    setGroups((prevGroups) => {
+      return prevGroups.map((group) => {
+        if (group.key === tabKey) {
+          const newInterfaces = [...(group.interfaces || [])]
+          if (newInterfaces[interfaceIndex]?.params?.[paramIndex]) {
+            const newParams = [...(newInterfaces[interfaceIndex].params || [])]
+            newParams[paramIndex] = {
+              ...newParams[paramIndex],
+              requestBody: [...newParams[paramIndex].requestBody, ""] // 添加空字符串
+            }
+            newInterfaces[interfaceIndex] = {
+              ...newInterfaces[interfaceIndex],
+              params: newParams
+            }
+          }
+          return {
+            ...group,
+            interfaces: newInterfaces
+          }
+        }
+        return group
+      })
+    })
+  }
+
+  // 删除某个请求体
+  const deleteRequestBody = (
+    tabKey: string,
+    interfaceIndex: number,
+    paramIndex: number,
+    requestBodyIndex: number
+  ) => {
+    setGroups((prevGroups) => {
+      return prevGroups.map((group) => {
+        if (group.key === tabKey) {
+          const newInterfaces = [...(group.interfaces || [])]
+          if (newInterfaces[interfaceIndex]?.params?.[paramIndex]) {
+            const newParams = [...(newInterfaces[interfaceIndex].params || [])]
+            const newRequestBodies = [...newParams[paramIndex].requestBody]
+            newRequestBodies.splice(requestBodyIndex, 1)
+            newParams[paramIndex] = {
+              ...newParams[paramIndex],
+              requestBody: newRequestBodies
+            }
+            newInterfaces[interfaceIndex] = {
+              ...newInterfaces[interfaceIndex],
+              params: newParams
+            }
+          }
+          return {
+            ...group,
+            interfaces: newInterfaces
+          }
+        }
+        return group
+      })
+    })
+  }
+
+  // 删除整个参数对
+  const deleteParam = (
+    tabKey: string,
+    interfaceIndex: number,
+    paramIndex: number
+  ) => {
+    Modal.confirm({
+      title: "确认删除",
+      content: "确定要删除这个响应配置吗？",
+      okText: "确定",
+      cancelText: "取消",
+      onOk: () => {
+        setGroups((prevGroups) => {
+          return prevGroups.map((group) => {
+            if (group.key === tabKey) {
+              const newInterfaces = [...(group.interfaces || [])]
+              if (newInterfaces[interfaceIndex]?.params) {
+                const newParams = [
+                  ...(newInterfaces[interfaceIndex].params || [])
+                ]
+                newParams.splice(paramIndex, 1)
+                newInterfaces[interfaceIndex] = {
+                  ...newInterfaces[interfaceIndex],
+                  params: newParams
+                }
+              }
+              return {
+                ...group,
+                interfaces: newInterfaces
+              }
+            }
+            return group
+          })
+        })
+        message.success("已删除响应配置")
+      }
+    })
+  }
+
+  // 更新某个请求体
+  const updateRequestBody = (
+    tabKey: string,
+    interfaceIndex: number,
+    paramIndex: number,
+    requestBodyIndex: number,
+    value: string
+  ) => {
+    setGroups((prevGroups) => {
+      return prevGroups.map((group) => {
+        if (group.key === tabKey) {
+          const newInterfaces = [...(group.interfaces || [])]
+          if (newInterfaces[interfaceIndex]?.params?.[paramIndex]) {
+            const newParams = [...(newInterfaces[interfaceIndex].params || [])]
+            const newRequestBodies = [...newParams[paramIndex].requestBody]
+            newRequestBodies[requestBodyIndex] = value
+            newParams[paramIndex] = {
+              ...newParams[paramIndex],
+              requestBody: newRequestBodies
+            }
+            newInterfaces[interfaceIndex] = {
+              ...newInterfaces[interfaceIndex],
+              params: newParams
+            }
+          }
+          return {
+            ...group,
+            interfaces: newInterfaces
+          }
+        }
+        return group
+      })
     })
   }
   // 首先找到当前激活的标签页数据
@@ -495,63 +699,167 @@ function IndexPopup() {
                     </div>
                   </Col>
                 </Row>
-                <div style={{ marginBottom: 16 }}>
-                  <div
-                    style={{
-                      marginBottom: 8,
-                      fontWeight: 500
-                    }}>
-                    请求体 (Request Body)
-                  </div>
-                  <div
-                    style={{
-                      marginBottom: 16,
-                      border: "1px solid #ddd",
-                      padding: "8px"
-                    }}>
-                    <CodeMirror
-                      value={iface.requestBody || ""}
-                      height="150px"
-                      theme={oneDark}
-                      extensions={[json()]}
-                      onChange={(value) =>
-                        updateInterface(
-                          currentGroup.key,
-                          index,
-                          "requestBody",
-                          value
-                        )
-                      }
-                      placeholder="输入 JSON 格式的请求体"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <div style={{ marginBottom: 8, fontWeight: 500 }}>
-                    响应内容 (Response)
-                  </div>
-                  <div
-                    style={{
-                      marginBottom: 16,
-                      border: "1px solid #ddd",
-                      padding: "8px"
-                    }}>
-                    <CodeMirror
-                      value={iface.response || ""}
-                      height="250px"
-                      theme={oneDark}
-                      extensions={[json()]}
-                      onChange={(value) =>
-                        updateInterface(
-                          currentGroup.key,
-                          index,
-                          "response",
-                          value
-                        )
-                      }
-                      placeholder="输入 JSON 格式的响应内容"
-                    />
-                  </div>
+                <div
+                  style={{
+                    border: "1px solid #ddd",
+                    padding: "10px 20px",
+                    marginTop: "10px"
+                  }}>
+                  {/* 显示已有的参数对 */}
+                  {iface.params && iface.params.length > 0 ? (
+                    iface.params.map((param, paramIndex) => (
+                      <div
+                        key={paramIndex}
+                        style={{
+                          marginBottom: 20,
+                          borderBottom: "1px solid #eee",
+                          paddingBottom: 20
+                        }}>
+                        <div
+                          style={{
+                            marginBottom: 10,
+                            fontWeight: 500,
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center"
+                          }}>
+                          <span>响应配置 {paramIndex + 1}</span>
+                          <Button
+                            danger
+                            size="small"
+                            icon={<DeleteOutlined />}
+                            onClick={() =>
+                              deleteParam(currentGroup.key, index, paramIndex)
+                            }
+                          />
+                        </div>
+                        <div style={{ display: "flex", gap: 20 }}>
+                          <div style={{ width: "50%", height: "fit-content" }}>
+                            <div style={{ marginBottom: 8, fontWeight: 500 }}>
+                              请求体列表
+                            </div>
+                            <div
+                              style={{
+                                height: "fit-content",
+                                overflowY: "auto"
+                              }}>
+                              {param.requestBody.length > 0 ? (
+                                param.requestBody.map((body, bodyIndex) => (
+                                  <div
+                                    key={bodyIndex}
+                                    style={{
+                                      marginBottom: 10,
+                                      borderTop: "1px solid #e8e8e8",
+                                      padding: 0
+                                    }}>
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        justifyContent: "flex-end",
+                                        marginBottom: 4
+                                      }}>
+                                      <Button
+                                        danger
+                                        size="small"
+                                        type="text"
+                                        icon={<DeleteOutlined />}
+                                        onClick={() =>
+                                          deleteRequestBody(
+                                            currentGroup.key,
+                                            index,
+                                            paramIndex,
+                                            bodyIndex
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                    <CodeMirror
+                                      value={body}
+                                      height="100px"
+                                      theme={oneDark}
+                                      extensions={[json()]}
+                                      onChange={(value) =>
+                                        updateRequestBody(
+                                          currentGroup.key,
+                                          index,
+                                          paramIndex,
+                                          bodyIndex,
+                                          value
+                                        )
+                                      }
+                                      placeholder="输入 JSON 格式的请求体"
+                                    />
+                                  </div>
+                                ))
+                              ) : (
+                                <div
+                                  style={{
+                                    color: "#999",
+                                    textAlign: "center",
+                                    padding: 20
+                                  }}>
+                                  暂无请求体
+                                </div>
+                              )}
+                            </div>
+                            <Button
+                              size="small"
+                              style={{ marginTop: 8, width: "100%" }}
+                              onClick={() =>
+                                addRequestBody(
+                                  currentGroup.key,
+                                  index,
+                                  paramIndex
+                                )
+                              }>
+                              添加请求体
+                            </Button>
+                          </div>
+                          <div style={{ width: "50%" }}>
+                            <div style={{ marginBottom: 8, fontWeight: 500 }}>
+                              响应内容
+                            </div>
+                            <CodeMirror
+                              value={param.response || ""}
+                              height={`${Math.max(
+                                150, // 最小高度
+                                param.requestBody.length > 0
+                                  ? param.requestBody.length * 140 // 每个请求体 100px + padding 8*2 + border 2 + 删除按钮区域 28 = 146px，间距 10px
+                                  : 150
+                              )}px`}
+                              theme={oneDark}
+                              extensions={[json()]}
+                              onChange={(value) =>
+                                updateParamResponse(
+                                  currentGroup.key,
+                                  index,
+                                  paramIndex,
+                                  value
+                                )
+                              }
+                              placeholder="输入 JSON 格式的响应内容"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div
+                      style={{
+                        textAlign: "center",
+                        padding: 20,
+                        color: "#999"
+                      }}>
+                      暂无响应配置，点击下方按钮添加
+                    </div>
+                  )}
+
+                  <Button
+                    type="primary"
+                    onClick={() => addParam(currentGroup.key, index)}
+                    style={{ marginTop: 10 }}>
+                    添加响应配置
+                  </Button>
                 </div>
               </Card>
             </div>
