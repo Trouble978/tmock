@@ -8,7 +8,7 @@ export const config: PlasmoCSConfig = {
 }
 
 const originalFetch = window.fetch
-
+// 暂存
 // 使用 Chrome 原生存储 API
 async function getStorageData(key: string): Promise<any> {
   return new Promise((resolve) => {
