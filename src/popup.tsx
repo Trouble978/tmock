@@ -55,7 +55,9 @@ interface TabData {
   interfaces?: InterfaceData[] // 每个标签页包含多个接口
 }
 // 创建 storage 实例
-const storage = new Storage()
+const storage = new Storage({
+  copiedKeyList: ["shield-modulation"]
+})
 
 const items: MenuProps["items"] = [
   {
@@ -220,8 +222,6 @@ function IndexPopup() {
       method: "GET",
       url: "",
       status: 200,
-      response: "",
-      requestBody: "",
       label: "",
       time: 0,
       switch: true
@@ -278,7 +278,7 @@ function IndexPopup() {
           const newInterfaces = [...(group.interfaces || [])]
           if (newInterfaces[interfaceIndex]) {
             const newParam: ParamsData = {
-              requestBody: [], // 空数组，可以添加多个请求体
+              requestBody: [],
               response: ""
             }
             newInterfaces[interfaceIndex] = {
@@ -659,7 +659,8 @@ function IndexPopup() {
                   </Col>
                   <Col span={11}>
                     <Input
-                      value={iface.label || "接口详细"}
+                      value={iface.label}
+                      placeholder="接口详情"
                       onChange={(e) =>
                         updateInterface(
                           currentGroup.key,
@@ -822,10 +823,10 @@ function IndexPopup() {
                             <CodeMirror
                               value={param.response || ""}
                               height={`${Math.max(
-                                150, // 最小高度
-                                param.requestBody.length > 0
-                                  ? param.requestBody.length * 140 // 每个请求体 100px + padding 8*2 + border 2 + 删除按钮区域 28 = 146px，间距 10px
-                                  : 150
+                                170,
+                                param.requestBody.length > 1
+                                  ? (param.requestBody.length-1) * 138 +170
+                                  : 170
                               )}px`}
                               theme={oneDark}
                               extensions={[json()]}
@@ -857,7 +858,7 @@ function IndexPopup() {
                   <Button
                     type="primary"
                     onClick={() => addParam(currentGroup.key, index)}
-                    style={{ marginTop: 10 }}>
+                    style={{ marginTop: 10,width: '100%'}}>
                     添加响应配置
                   </Button>
                 </div>
@@ -876,11 +877,11 @@ function IndexPopup() {
                       overflow: "hidden",
                       textOverflow: "ellipsis"
                     }}>
-                    {iface.label || "接口详细"}
+                    {iface.label || "接口详情"}
                   </div>
                   <Tag
                     color={methodColors[iface.method] || "default"}
-                    style={{ width: "45px" }}>
+                    style={{ width: '60px', textAlign: "center"}}>
                     {iface.method || "GET"}
                   </Tag>
                   <div
