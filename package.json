@@ -39,7 +39,8 @@
       "scripting",
       "storage",
       "webRequest", 
-      "webRequestBlocking"
+      "webRequestBlocking",
+      "declarativeNetRequest"
     ]
   }
 }
