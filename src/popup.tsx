@@ -41,8 +41,6 @@ interface InterfaceData {
   method: string
   url: string
   status: number
-  // response: string
-  // requestBody: string
   time: number
   switch: boolean
   label: string

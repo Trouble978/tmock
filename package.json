@@ -36,7 +36,10 @@
     ],
     "permissions": [
       "tabs",
-      "scripting"
+      "scripting",
+      "storage",
+      "webRequest", 
+      "webRequestBlocking"
     ]
   }
 }
